@@ -32,6 +32,7 @@ export interface UploadedFile {
   name: string;
   size: number;
   isUploaded?: boolean;
+  beschrijving?: string;
 }
 
 interface PortalFileUploadProps {
@@ -44,6 +45,7 @@ interface PortalFileUploadProps {
   onUploadStart: (upload: Promise<void>) => void;
   onUploadEnd: (upload: Promise<void>) => void;
   informatieobjecttype?: string;
+  description?: string;
   initialValue?: UploadedFile[];
   taakId?: string;
 }
@@ -58,6 +60,7 @@ const PortalFileUpload = ({
   onUploadStart,
   onUploadEnd,
   informatieobjecttype,
+  description,
   initialValue = [],
   taakId,
 }: PortalFileUploadProps) => {
@@ -74,11 +77,14 @@ const PortalFileUpload = ({
     }
   };
 
-  const interpolateInformatieobjectUrl = (url: string) =>
-    url.replace(
+  const interpolateTemplate = (template: string) =>
+    template.replace(
       /({{\s*(.*?)\s*}})/g,
       (input, _capturedTemplate, capturedPath) => {
-        const value = get(context, capturedPath);
+        // Form.io templates reference the root submission data as "data",
+        // but `context` here already is that root data object.
+        const normalizedPath = capturedPath.replace(/^data\./, "");
+        const value = get(context, normalizedPath);
 
         return value ?? input;
       },
@@ -94,8 +100,12 @@ const PortalFileUpload = ({
     if (informatieobjecttype) {
       formData.append(
         "informatieobjecttype",
-        interpolateInformatieobjectUrl(informatieobjecttype),
+        interpolateTemplate(informatieobjecttype),
       );
+    }
+
+    if (description) {
+      formData.append("beschrijving", interpolateTemplate(description));
     }
 
     const tempId = crypto.randomUUID();
@@ -298,6 +308,7 @@ class FormIoUploader extends FieldComponent {
           onUploadStart={this.onUploadStartHandler}
           onUploadEnd={this.onUploadEndHandler}
           informatieobjecttype={this.component.informatieobjecttype || ""}
+          description={this.component.description || ""}
           initialValue={this.dataValue}
           taakId={this.options.taakId}
         />
