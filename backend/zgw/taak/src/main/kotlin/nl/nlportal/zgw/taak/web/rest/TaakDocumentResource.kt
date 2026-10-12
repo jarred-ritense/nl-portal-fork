@@ -51,6 +51,7 @@ class TaakDocumentResource(
         @PathVariable taakId: UUID,
         @RequestPart("file") file: FilePart,
         @RequestPart("informatieobjecttype", required = false) informatieobjecttype: String?,
+        @RequestPart("beschrijving", required = false) beschrijving: String?,
         authentication: CommonGroundAuthentication,
     ): ResponseEntity<Any> {
         taakService.getTaakByIdV2(taakId, authentication)
@@ -71,6 +72,7 @@ class TaakDocumentResource(
                     sanitizedFilename,
                     documentApi,
                     informatieobjecttype,
+                    beschrijving,
                 ),
             )
         } catch (e: Exception) {
