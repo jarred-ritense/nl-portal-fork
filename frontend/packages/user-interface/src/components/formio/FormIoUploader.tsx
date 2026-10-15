@@ -63,13 +63,16 @@ const PortalFileUpload = ({
   initialValue = [],
   taakId,
 }: PortalFileUploadProps) => {
-  const [error, setError] = useState(false);
+  const [errorMessageId, setErrorMessageId] = useState<string | null>(null);
   const [fileList, setFileList] = useState<UploadedFile[]>(initialValue);
 
   const intl = useIntl();
 
-  const handleError = (tempId?: string) => {
-    setError(true);
+  const handleError = (
+    tempId?: string,
+    messageId = "formio.fileUpload.error",
+  ) => {
+    setErrorMessageId(messageId);
 
     if (tempId) {
       setFileList((prev) => prev.filter((item) => item.id !== tempId));
@@ -89,7 +92,7 @@ const PortalFileUpload = ({
   const uploadFile = (file: File) => {
     const restUri = sessionStorage.getItem("REST_URI");
     const uploadLink = `${restUri}/taak/${taakId}/document/content`;
-    setError(false);
+    setErrorMessageId(null);
     const formData = new FormData();
     formData.append("file", file);
 
@@ -124,7 +127,13 @@ const PortalFileUpload = ({
     })
       .then(async (response) => {
         if (!response.ok) {
-          handleError(tempId);
+          const errorResponse = await response.json().catch(() => null);
+          handleError(
+            tempId,
+            errorResponse?.error === "BESCHRIJVING_TOO_LONG"
+              ? "formio.fileUpload.descriptionTooLong"
+              : undefined,
+          );
           return;
         }
 
@@ -135,7 +144,7 @@ const PortalFileUpload = ({
           size: file.size,
         };
 
-        setError(false);
+        setErrorMessageId(null);
 
         setFileList((prev) =>
           prev.map((item) =>
@@ -163,16 +172,16 @@ const PortalFileUpload = ({
   }, [fileList, onChange]);
 
   return (
-    <FormField invalid={error}>
+    <FormField invalid={errorMessageId !== null}>
       {!hideLabel && label && <FormLabel htmlFor={id}>{label}</FormLabel>}
-      {error && (
+      {errorMessageId && (
         <Alert
           close={() => {
-            setError(false);
+            setErrorMessageId(null);
           }}
           text={
             <Paragraph>
-              <FormattedMessage id="formio.fileUpload.error" />
+              <FormattedMessage id={errorMessageId} />
             </Paragraph>
           }
           title=""

@@ -56,6 +56,16 @@ class TaakDocumentResource(
     ): ResponseEntity<Any> {
         taakService.getTaakByIdV2(taakId, authentication)
 
+        if ((beschrijving?.length ?: 0) > MAX_BESCHRIJVING_LENGTH) {
+            return ResponseEntity(
+                mapOf(
+                    "error" to BESCHRIJVING_TOO_LONG,
+                    "message" to "beschrijving may not be longer than $MAX_BESCHRIJVING_LENGTH characters",
+                ),
+                HttpStatus.BAD_REQUEST,
+            )
+        }
+
         val sanitizedFilename = FilenameSanitizer.sanitize(file.filename())
         val bufferedContent = bufferFileContent(file)
 
@@ -89,5 +99,11 @@ class TaakDocumentResource(
         } finally {
             DataBufferUtils.release(dataBuffer)
         }
+    }
+
+    companion object {
+        // Hard limit of the Documenten API for enkelvoudiginformatieobject.beschrijving
+        const val MAX_BESCHRIJVING_LENGTH = 1000
+        const val BESCHRIJVING_TOO_LONG = "BESCHRIJVING_TOO_LONG"
     }
 }
