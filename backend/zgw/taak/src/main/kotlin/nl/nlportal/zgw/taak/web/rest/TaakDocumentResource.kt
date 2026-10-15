@@ -51,8 +51,8 @@ class TaakDocumentResource(
         @PathVariable taakId: UUID,
         @RequestPart("file") file: FilePart,
         @RequestPart("informatieobjecttype", required = false) informatieobjecttype: String?,
-        @RequestPart("beschrijving", required = false) beschrijving: String?,
         authentication: CommonGroundAuthentication,
+        @RequestPart("beschrijving", required = false) beschrijving: String? = null,
     ): ResponseEntity<Any> {
         taakService.getTaakByIdV2(taakId, authentication)
 
