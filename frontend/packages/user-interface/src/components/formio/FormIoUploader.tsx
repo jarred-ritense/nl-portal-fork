@@ -32,7 +32,6 @@ export interface UploadedFile {
   name: string;
   size: number;
   isUploaded?: boolean;
-  beschrijving?: string;
 }
 
 interface PortalFileUploadProps {
@@ -45,7 +44,7 @@ interface PortalFileUploadProps {
   onUploadStart: (upload: Promise<void>) => void;
   onUploadEnd: (upload: Promise<void>) => void;
   informatieobjecttype?: string;
-  description?: string;
+  getBeschrijving?: () => string | undefined;
   initialValue?: UploadedFile[];
   taakId?: string;
 }
@@ -60,7 +59,7 @@ const PortalFileUpload = ({
   onUploadStart,
   onUploadEnd,
   informatieobjecttype,
-  description,
+  getBeschrijving,
   initialValue = [],
   taakId,
 }: PortalFileUploadProps) => {
@@ -77,14 +76,11 @@ const PortalFileUpload = ({
     }
   };
 
-  const interpolateTemplate = (template: string) =>
-    template.replace(
+  const interpolateInformatieobjectUrl = (url: string) =>
+    url.replace(
       /({{\s*(.*?)\s*}})/g,
       (input, _capturedTemplate, capturedPath) => {
-        // Form.io templates reference the root submission data as "data",
-        // but `context` here already is that root data object.
-        const normalizedPath = capturedPath.replace(/^data\./, "");
-        const value = get(context, normalizedPath);
+        const value = get(context, capturedPath);
 
         return value ?? input;
       },
@@ -100,12 +96,13 @@ const PortalFileUpload = ({
     if (informatieobjecttype) {
       formData.append(
         "informatieobjecttype",
-        interpolateTemplate(informatieobjecttype),
+        interpolateInformatieobjectUrl(informatieobjecttype),
       );
     }
 
-    if (description) {
-      formData.append("beschrijving", interpolateTemplate(description));
+    const beschrijving = getBeschrijving?.();
+    if (beschrijving) {
+      formData.append("beschrijving", beschrijving);
     }
 
     const tempId = crypto.randomUUID();
@@ -245,6 +242,26 @@ class FormIoUploader extends FieldComponent {
     });
   }
 
+  static editForm = (...extend: any[]) =>
+    FieldComponent.editForm([
+      {
+        key: "data",
+        components: [
+          {
+            type: "textfield",
+            key: "beschrijvingPath",
+            label: "Beschrijving path",
+            input: true,
+            weight: 200,
+            placeholder: "e.g. bestanden.beschrijving",
+            tooltip:
+              "Dotted path into the form data whose value is stored as the description (beschrijving) of each uploaded document. Use a hidden field with a default value for a static description.",
+          },
+        ],
+      },
+      ...extend,
+    ]);
+
   static register: () => void = () => {
     Components.addComponent("portalFileUpload", FormIoUploader);
   };
@@ -274,6 +291,14 @@ class FormIoUploader extends FieldComponent {
     if (!this.pendingUploads.delete(upload)) return;
 
     this.emit("fileUploadingEnd", upload);
+  };
+
+  getBeschrijving = (): string | undefined => {
+    const path = this.component.beschrijvingPath;
+    if (!path) return undefined;
+
+    const value = get(this.rootValue, path);
+    return typeof value === "string" && value.trim() ? value : undefined;
   };
 
   deleteValue() {
@@ -308,7 +333,7 @@ class FormIoUploader extends FieldComponent {
           onUploadStart={this.onUploadStartHandler}
           onUploadEnd={this.onUploadEndHandler}
           informatieobjecttype={this.component.informatieobjecttype || ""}
-          description={this.component.description || ""}
+          getBeschrijving={this.getBeschrijving}
           initialValue={this.dataValue}
           taakId={this.options.taakId}
         />
