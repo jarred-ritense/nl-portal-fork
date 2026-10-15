@@ -158,11 +158,11 @@
                         ]
                     },
                     {
-                        "label": "description",
-                        "defaultValue": "Test uit variabele",
-                        "key": "description",
+                        "key": "bestanden.beschrijvingPartnerID",
                         "type": "hidden",
                         "input": true,
+                        "label": "Beschrijving identiteitsbewijs partner",
+                        "defaultValue": "Kopie identiteitsbewijs partner",
                         "tableView": false
                     },
                     {
@@ -170,7 +170,7 @@
                         "type": "portalFileUpload",
                         "input": true,
                         "label": "Een kopie van het identiteitsbewijs van uw partner",
-                        "description": "{{data.description}}",
+                        "beschrijvingPath": "bestanden.beschrijvingPartnerID",
                         "tableView": false,
                         "conditional": {
                             "eq": true,
