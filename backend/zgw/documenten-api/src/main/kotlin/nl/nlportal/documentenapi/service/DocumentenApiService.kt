@@ -96,7 +96,7 @@ class DocumentenApiService(
                             it.isNullOrEmpty()
                         }
                         ?: documentenApiConfig.documentTypeUrl!!,
-                beschrijving = beschrijving,
+                beschrijving = beschrijving.takeUnless { it.isNullOrBlank() },
             ),
             content,
             documentApi,
