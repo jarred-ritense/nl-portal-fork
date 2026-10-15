@@ -87,10 +87,11 @@ describe("FormIoUploader", () => {
       document.body.innerHTML = "";
     });
 
-    const uploadFile = async (uploaderComponent: object) => {
-      fetchMock.mockResolvedValue(
-        new Response(JSON.stringify({ url: "http://document" })),
-      );
+    const uploadFile = async (
+      uploaderComponent: object,
+      response = new Response(JSON.stringify({ url: "http://document" })),
+    ) => {
+      fetchMock.mockResolvedValue(response);
       vi.stubGlobal("fetch", fetchMock);
 
       const element = document.createElement("div");
@@ -132,7 +133,7 @@ describe("FormIoUploader", () => {
       await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
 
       const [url, init] = fetchMock.mock.calls[0];
-      return { url, body: init.body as FormData };
+      return { element, url, body: init.body as FormData };
     };
 
     it("sends the value of the hidden field as beschrijving", async () => {
@@ -149,6 +150,37 @@ describe("FormIoUploader", () => {
 
       expect(body.has("file")).toBe(true);
       expect(body.has("beschrijving")).toBe(false);
+    });
+
+    it("shows a message when the beschrijving is too long", async () => {
+      const { element } = await uploadFile(
+        { beschrijvingPath: "bestanden.beschrijving" },
+        new Response(JSON.stringify({ error: "BESCHRIJVING_TOO_LONG" }), {
+          status: 400,
+        }),
+      );
+
+      await waitFor(() =>
+        expect(element.textContent).toContain(
+          "De beschrijving van het document is te lang. Neem contact op met de gemeente.",
+        ),
+      );
+    });
+
+    it("shows the generic error for other failed uploads", async () => {
+      const { element } = await uploadFile(
+        {},
+        new Response("Internal Server Error", { status: 500 }),
+      );
+
+      await waitFor(() =>
+        expect(element.textContent).toContain(
+          "Er is een fout opgetreden tijdens het uploaden van het bestand.",
+        ),
+      );
+      expect(element.textContent).not.toContain(
+        "De beschrijving van het document is te lang. Neem contact op met de gemeente.",
+      );
     });
   });
 });
