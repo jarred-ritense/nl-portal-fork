@@ -86,7 +86,7 @@ class TaakDocumentResourceTest {
             val file = filePart("../../etc/passwd", payload)
             whenever(virusScanService.scan(any<ByteArray>()))
                 .thenReturn(VirusScanResult(VirusScanStatus.OK, emptyMap()))
-            whenever(documentenApiService.uploadDocument(any(), any(), any(), anyOrNull()))
+            whenever(documentenApiService.uploadDocument(any(), any(), any(), anyOrNull(), anyOrNull()))
                 .thenReturn(stubDocument())
 
             val response = resource.uploadDocument(taakId, file, null, authentication)
@@ -98,6 +98,7 @@ class TaakDocumentResourceTest {
                 bytesCaptor.capture(),
                 filenameCaptor.capture(),
                 any(),
+                anyOrNull(),
                 anyOrNull(),
             )
             assertFalse(filenameCaptor.firstValue.contains('/'))
@@ -126,7 +127,7 @@ class TaakDocumentResourceTest {
             val file = filePart("doc.pdf", payload)
             whenever(virusScanService.scan(any<ByteArray>()))
                 .thenReturn(VirusScanResult(VirusScanStatus.OK, emptyMap()))
-            whenever(documentenApiService.uploadDocument(any(), any(), any(), anyOrNull()))
+            whenever(documentenApiService.uploadDocument(any(), any(), any(), anyOrNull(), anyOrNull()))
                 .thenReturn(stubDocument())
 
             resource.uploadDocument(taakId, file, null, authentication)
@@ -138,6 +139,7 @@ class TaakDocumentResourceTest {
                 uploadCaptor.capture(),
                 any(),
                 any(),
+                anyOrNull(),
                 anyOrNull(),
             )
             assertSame(scanCaptor.firstValue, uploadCaptor.firstValue)
