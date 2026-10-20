@@ -2,7 +2,7 @@
 
 In zaakafhandeling kan het nodig zijn om (aanvullende) informatie op te vragen bij de klant of ketenpartner. Dit kan middels de externe taak. Een taak kan zijn het aanleveren van aanvullende gestructureerde informatie, het aanleveren van documenten (zaakinformatieobjecten) of het doen van een betaling.
 
-Het formaat van een externe taak is gestandaardiseerd in een JSON formaat. De externe taak kan worden aangemaakt via een component naar keuze, in veel gevallen een zaakafhandelcomponent of taakapplicatie.
+Het formaat van een externe taak is gestandaardiseerd in een JSON-formaat. De externe taak kan worden aangemaakt via een component naar keuze, in veel gevallen een zaakafhandelcomponent of taakapplicatie.
 
 ### Informatieobjecttype bij geüploade documenten
 
@@ -14,7 +14,7 @@ Werking:
 
 * Is `informatieobjecttype` ingesteld, dan stuurt de portal de waarde bij elke upload mee.
 * Is `informatieobjecttype` niet ingesteld of leeg, dan gebruikt de backend het standaard informatieobjecttype uit de configuratie van de Documenten API.
-* De waarde mag placeholders bevatten in de vorm `{{pad}}`. Op het moment van uploaden vervangt de portal elke placeholder door de waarde op dat pad in de data van het component. Het pad begint zonder `data.`, en voor een component in een container is het relatief ten opzichte van die container. Een placeholder waarvoor geen waarde wordt gevonden, blijft ongewijzigd in de URL staan.
+* De waarde mag placeholders bevatten in de vorm `{{pad}}`. Op het moment van uploaden vervangt de portal elke placeholder door de waarde op dat pad in de data van de component. Het pad begint zonder `data.`, en voor een component in een container is het relatief ten opzichte van die container. Een placeholder waarvoor geen waarde wordt gevonden, blijft ongewijzigd in de URL staan.
 * Deze placeholders worden door de portal zelf als tekst vervangen, niet via de template-interpolatie van Form.io. Ze werken daarom ook binnen een strikte Content Security Policy.
 
 Een vast informatieobjecttype:
@@ -63,7 +63,9 @@ Voor een vaste beschrijving voeg je een verborgen veld (`hidden`) toe met een `d
     "label": "Beschrijving identiteitsbewijs partner",
     "defaultValue": "Kopie identiteitsbewijs partner",
     "tableView": false
-},
+}
+```
+```json
 {
     "key": "bestanden.partnerID",
     "type": "portalFileUpload",
