@@ -49,9 +49,9 @@ Hiervoor heeft het `portalFileUpload` component de eigenschap `beschrijvingPath`
 
 Werking:
 
-* Op het moment van uploaden leest de portal de waarde op `beschrijvingPath` uit de formulierdata.
+* Op het moment van uploaden leest de portal de waarde op `beschrijvingPath` uit de root van de formulierdata.
 * Alleen als die waarde een niet-lege tekst is, wordt deze als `beschrijving` meegestuurd. Is `beschrijvingPath` niet ingesteld, of is de waarde leeg, alleen spaties of geen tekst, dan wordt er geen beschrijving opgeslagen.
-* De beschrijving wordt niet via template-interpolatie (zoals `{{data.veld}}`) bepaald, zodat dit werkt binnen een strikte Content Security Policy. Gebruik ook niet de Form.io-eigenschap `description`; dat is de helptekst van het veld.
+* De beschrijving wordt niet via template-interpolatie (zoals `{{data.veld}}`) bepaald, zodat dit werkt binnen een strikte Content Security Policy. 
 
 Voor een vaste beschrijving voeg je een verborgen veld (`hidden`) toe met een `defaultValue`, en laat je `beschrijvingPath` naar dat veld wijzen. Wil je de beschrijving vanuit het zaakafhandelcomponent (bijvoorbeeld GZAC) laten bepalen, vul dan dat verborgen veld via de taakdata.
 
