@@ -40,6 +40,30 @@ describe("FormIoUploader", () => {
       expect(uploader.getBeschrijving()).toBe("Kopie identiteitsbewijs");
     });
 
+    it("prefers the value in the uploader's own row over the form root", () => {
+      const uploader = createUploader(
+        { beschrijvingPath: "item.omschrijving" },
+        { item: { omschrijving: "Bestand 2" } },
+      );
+      Object.defineProperty(uploader, "rootValue", {
+        get: () => ({ item: { omschrijving: "Root" } }),
+      });
+
+      expect(uploader.getBeschrijving()).toBe("Bestand 2");
+    });
+
+    it("falls back to the form root when the row has no value", () => {
+      const uploader = createUploader(
+        { beschrijvingPath: "bestanden.beschrijving" },
+        { documentUpload: [] },
+      );
+      Object.defineProperty(uploader, "rootValue", {
+        get: () => ({ bestanden: { beschrijving: "Kopie identiteitsbewijs" } }),
+      });
+
+      expect(uploader.getBeschrijving()).toBe("Kopie identiteitsbewijs");
+    });
+
     it("returns undefined when beschrijvingPath is not set", () => {
       const uploader = createUploader(
         {},
@@ -143,6 +167,73 @@ describe("FormIoUploader", () => {
 
       expect(url).toBe("http://localhost/api/taak/taak-id/document/content");
       expect(body.get("beschrijving")).toBe("Kopie identiteitsbewijs partner");
+    });
+
+    it("sends the beschrijving of the row the file is uploaded in", async () => {
+      fetchMock.mockResolvedValue(
+        new Response(JSON.stringify({ url: "http://document" })),
+      );
+      vi.stubGlobal("fetch", fetchMock);
+
+      const element = document.createElement("div");
+      document.body.appendChild(element);
+
+      const form = await Formio.createForm(
+        element,
+        {
+          components: [
+            {
+              key: "bestanden.opTeVragenInformatie",
+              type: "datagrid",
+              input: true,
+              components: [
+                {
+                  key: "informatieverzoekItem.omschrijvingAanvrager",
+                  type: "hidden",
+                  input: true,
+                },
+                {
+                  key: "documentUpload",
+                  type: "portalFileUpload",
+                  input: true,
+                  beschrijvingPath:
+                    "informatieverzoekItem.omschrijvingAanvrager",
+                },
+              ],
+            },
+          ],
+        },
+        { taakId: "taak-id" },
+      );
+
+      await form.setSubmission({
+        data: {
+          bestanden: {
+            opTeVragenInformatie: [0, 1, 2].map((index) => ({
+              informatieverzoekItem: {
+                omschrijvingAanvrager: `Bestand ${index}`,
+              },
+              documentUpload: [],
+            })),
+          },
+        },
+      });
+
+      const inputs = await waitFor(() => {
+        const fileInputs =
+          element.querySelectorAll<HTMLInputElement>('input[type="file"]');
+        expect(fileInputs).toHaveLength(3);
+        return fileInputs;
+      });
+
+      fireEvent.change(inputs[2], {
+        target: { files: [new File(["inhoud"], "id.pdf")] },
+      });
+
+      await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+
+      const body = fetchMock.mock.calls[0][1].body as FormData;
+      expect(body.get("beschrijving")).toBe("Bestand 2");
     });
 
     it("does not send beschrijving without beschrijvingPath", async () => {

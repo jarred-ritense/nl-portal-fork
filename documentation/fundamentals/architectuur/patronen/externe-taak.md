@@ -49,7 +49,7 @@ Hiervoor heeft het `portalFileUpload` component de eigenschap `beschrijvingPath`
 
 Werking:
 
-* Op het moment van uploaden leest de portal de waarde op `beschrijvingPath` uit de root van de formulierdata.
+* Op het moment van uploaden leest de portal de waarde op `beschrijvingPath` uit de formulierdata. Staat het upload-component in een `datagrid`, dan wordt het pad eerst gezocht in de rij waarin het bestand wordt geüpload; levert dat geen waarde op, dan wordt het pad gezocht vanaf de root van de formulierdata.
 * Alleen als die waarde een niet-lege tekst is, wordt deze als `beschrijving` meegestuurd. Is `beschrijvingPath` niet ingesteld, of is de waarde leeg, alleen spaties of geen tekst, dan wordt er geen beschrijving opgeslagen.
 * De beschrijving wordt niet via template-interpolatie (zoals `{{data.veld}}`) bepaald, zodat dit werkt binnen een strikte Content Security Policy. 
 
@@ -77,6 +77,33 @@ Voor een vaste beschrijving voeg je een verborgen veld (`hidden`) toe met een `d
 ```
 
 Het verborgen veld is een gewoon formulierveld en wordt dus ook meegestuurd bij het indienen van het formulier.
+
+#### Beschrijving per rij in een datagrid
+
+Staat het `portalFileUpload` component in een `datagrid`, dan kan iedere rij een eigen beschrijving hebben. Laat `beschrijvingPath` dan wijzen naar een veld in dezelfde rij, relatief ten opzichte van die rij. Wordt er een bestand geüpload in rij 2, dan wordt de beschrijving uit rij 2 gebruikt.
+
+```json
+{
+    "key": "bestanden.opTeVragenInformatie",
+    "type": "datagrid",
+    "input": true,
+    "components": [
+        {
+            "key": "informatieverzoekItem.omschrijvingAanvrager",
+            "type": "hidden",
+            "input": true,
+            "defaultValue": "Kopie identiteitsbewijs partner"
+        },
+        {
+            "key": "documentUpload",
+            "type": "portalFileUpload",
+            "input": true,
+            "beschrijvingPath": "informatieverzoekItem.omschrijvingAanvrager",
+            "multipleFiles": true
+        }
+    ]
+}
+```
 
 ### Sequence diagram
 

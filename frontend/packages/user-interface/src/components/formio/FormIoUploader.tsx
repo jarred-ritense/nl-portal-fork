@@ -264,7 +264,7 @@ class FormIoUploader extends FieldComponent {
             weight: 200,
             placeholder: "e.g. bestanden.beschrijving",
             tooltip:
-              "Dotted path into the form data whose value is stored as the description (beschrijving) of each uploaded document. Use a hidden field with a default value for a static description.",
+              "Dotted path into the form data whose value is stored as the description (beschrijving) of each uploaded document. Inside a data grid the path is first resolved against the uploader's own row. Use a hidden field with a default value for a static description.",
           },
         ],
       },
@@ -306,7 +306,7 @@ class FormIoUploader extends FieldComponent {
     const path = this.component.beschrijvingPath;
     if (!path) return undefined;
 
-    const value = get(this.rootValue, path);
+    const value = get(this.data, path) ?? get(this.rootValue, path);
     return typeof value === "string" && value.trim() ? value : undefined;
   };
 
