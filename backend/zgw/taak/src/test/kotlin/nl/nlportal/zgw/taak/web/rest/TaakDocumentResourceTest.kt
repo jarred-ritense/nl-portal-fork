@@ -152,13 +152,13 @@ class TaakDocumentResourceTest {
         runTest {
             val taakId = UUID.randomUUID()
             val file = filePart("doc.pdf", "content".toByteArray())
-            val beschrijving = "a".repeat(TaakDocumentResource.MAX_BESCHRIJVING_LENGTH + 1)
+            val beschrijving = "a".repeat(1001)
 
             val response = resource.uploadDocument(taakId, file, null, authentication, beschrijving)
 
             assertEquals(HttpStatus.BAD_REQUEST, response.statusCode)
             assertEquals(
-                TaakDocumentResource.BESCHRIJVING_TOO_LONG,
+                "BESCHRIJVING_TOO_LONG",
                 (response.body as Map<*, *>)["error"],
             )
             verifyNoInteractions(virusScanService, documentenApiService)
@@ -169,7 +169,7 @@ class TaakDocumentResourceTest {
         runTest {
             val taakId = UUID.randomUUID()
             val file = filePart("doc.pdf", "content".toByteArray())
-            val beschrijving = "a".repeat(TaakDocumentResource.MAX_BESCHRIJVING_LENGTH)
+            val beschrijving = "a".repeat(1000)
             whenever(virusScanService.scan(any<ByteArray>()))
                 .thenReturn(VirusScanResult(VirusScanStatus.OK, emptyMap()))
             whenever(documentenApiService.uploadDocument(any(), any(), any(), anyOrNull(), anyOrNull()))
